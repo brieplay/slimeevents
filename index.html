@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Slime Events Ltd.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --lime: #c8f000;
+      --black: #0a0a0a;
+      --offwhite: #f2f0e8;
+      --mid: #1a1a1a;
+      --muted: #5a5a5a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--offwhite);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--lime);
+      border-radius: 50%;
+      position: fixed;
+      top: 0; left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease;
+      mix-blend-mode: difference;
+    }
+    .cursor.big { width: 40px; height: 40px; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2.5rem;
+      mix-blend-mode: difference;
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.12em;
+      color: var(--offwhite);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--offwhite);
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .nav-links a:hover { opacity: 1; }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 2.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: var(--black);
+      z-index: 0;
+    }
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      top: -20%; right: -10%;
+      width: 70vw; height: 70vw;
+      background: radial-gradient(circle, rgba(200,240,0,0.12) 0%, transparent 65%);
+      animation: pulse 6s ease-in-out infinite alternate;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      bottom: -10%; left: -5%;
+      width: 40vw; height: 40vw;
+      background: radial-gradient(circle, rgba(200,240,0,0.06) 0%, transparent 65%);
+      animation: pulse 8s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); opacity: 0.8; }
+      to { transform: scale(1.1); opacity: 1; }
+    }
+
+    .hero-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 1rem;
+      position: relative; z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.3s forwards;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 15vw, 14rem);
+      line-height: 0.88;
+      letter-spacing: -0.01em;
+      position: relative; z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.5s forwards;
+    }
+    .hero-title span { color: var(--lime); }
+
+    .hero-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 2.5rem;
+      position: relative; z-index: 1;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.8s forwards;
+    }
+    .hero-desc {
+      max-width: 320px;
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(242,240,232,0.6);
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--lime);
+      color: var(--black);
+      padding: 1rem 2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hero-cta:hover {
+      transform: translate(-3px, -3px);
+      box-shadow: 6px 6px 0 rgba(200,240,0,0.3);
+    }
+    .hero-cta svg { width: 16px; height: 16px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* TICKER */
+    .ticker {
+      background: var(--lime);
+      color: var(--black);
+      padding: 0.75rem 0;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .ticker-inner {
+      display: inline-flex;
+      animation: ticker 20s linear infinite;
+    }
+    .ticker-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      padding: 0 2rem;
+    }
+    .ticker-dot { opacity: 0.4; }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ABOUT */
+    .about {
+      padding: 7rem 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .about-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(6rem, 12vw, 10rem);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(200,240,0,0.2);
+      line-height: 1;
+    }
+    .about-content h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+    .about-content h2 em { color: var(--lime); font-style: normal; }
+    .about-content p {
+      color: rgba(242,240,232,0.6);
+      line-height: 1.8;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* WHAT WE DO */
+    .services {
+      padding: 5rem 2.5rem;
+      background: var(--mid);
+    }
+    .services-inner { max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 3rem;
+    }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: rgba(255,255,255,0.07);
+    }
+    .service-card {
+      background: var(--mid);
+      padding: 2.5rem 2rem;
+      transition: background 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 2px; width: 0;
+      background: var(--lime);
+      transition: width 0.4s ease;
+    }
+    .service-card:hover { background: #222; }
+    .service-card:hover::before { width: 100%; }
+    .service-icon {
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+    .service-card h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+    }
+    .service-card p {
+      font-size: 0.9rem;
+      color: rgba(242,240,232,0.55);
+      line-height: 1.7;
+    }
+
+    /* EVENTS */
+    .events {
+      padding: 7rem 2.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .events-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 3rem;
+    }
+    .events-header h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      line-height: 1;
+    }
+    .events-header h2 span { color: var(--lime); }
+    .view-all {
+      color: var(--lime);
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--lime);
+      padding-bottom: 2px;
+      transition: opacity 0.2s;
+    }
+    .view-all:hover { opacity: 0.7; }
+    .events-list { display: flex; flex-direction: column; }
+    .event-row {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      align-items: center;
+      padding: 1.75rem 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      gap: 2rem;
+      transition: padding-left 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+    .event-row:last-child { border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .event-row:hover { padding-left: 1rem; }
+    .event-row:hover .event-title { color: var(--lime); }
+    .event-date {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      color: var(--lime);
+    }
+    .event-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      transition: color 0.2s;
+    }
+    .event-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.3rem;
+    }
+    .event-venue {
+      font-size: 0.8rem;
+      color: rgba(242,240,232,0.5);
+      letter-spacing: 0.05em;
+    }
+    .event-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(200,240,0,0.1);
+      color: var(--lime);
+      padding: 0.2rem 0.6rem;
+      border-radius: 2px;
+    }
+    .event-row:nth-child(even) { background: rgba(255,255,255,0.01); }
+
+    /* WHY US */
+    .why {
+      background: var(--lime);
+      color: var(--black);
+      padding: 6rem 2.5rem;
+    }
+    .why-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .why h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 7vw, 6rem);
+      line-height: 1;
+      margin-bottom: 3rem;
+    }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2.5rem;
+    }
+    .why-item h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .why-item p {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      opacity: 0.7;
+    }
+    .why-stat {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    /* CONTACT */
+    .contact {
+      padding: 7rem 2.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .contact .section-label { text-align: center; }
+    .contact h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+    }
+    .contact h2 span { color: var(--lime); }
+    .contact p {
+      color: rgba(242,240,232,0.55);
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+    }
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      text-align: left;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .contact-form input,
+    .contact-form textarea,
+    .contact-form select {
+      background: var(--mid);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--offwhite);
+      padding: 1rem 1.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+    }
+    .contact-form input:focus,
+    .contact-form textarea:focus,
+    .contact-form select:focus {
+      border-color: var(--lime);
+    }
+    .contact-form textarea { height: 130px; resize: vertical; }
+    .contact-form select option { background: var(--mid); }
+    .submit-btn {
+      background: var(--lime);
+      color: var(--black);
+      border: none;
+      padding: 1.1rem 2.5rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.85rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: none;
+      align-self: flex-start;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .submit-btn:hover {
+      transform: translate(-3px, -3px);
+      box-shadow: 6px 6px 0 rgba(200,240,0,0.25);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.12em;
+      color: var(--offwhite);
+    }
+    footer p {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--lime); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 0 1.5rem 3rem; }
+      .hero-bottom { flex-direction: column; align-items: flex-start; gap: 2rem; }
+      .about { grid-template-columns: 1fr; padding: 4rem 1.5rem; }
+      .about-number { display: none; }
+      .services { padding: 4rem 1.5rem; }
+      .services-grid { grid-template-columns: 1fr; }
+      .events { padding: 4rem 1.5rem; }
+      .events-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .event-row { grid-template-columns: 80px 1fr; }
+      .event-meta { display: none; }
+      .why { padding: 4rem 1.5rem; }
+      .why-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .contact { padding: 4rem 1.5rem; }
+      .form-row { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+
+  <nav>
+    <a class="nav-logo" href="#">Slime Events Ltd.</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#events">Events</a></li>
+      <li><a href="#contact">Book Us</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <p class="hero-label">Live Events · Small Venues · Big Nights</p>
+    <h1 class="hero-title">Slime<br/>Events<br/><span>Ltd.</span></h1>
+    <div class="hero-bottom">
+      <p class="hero-desc">Bringing live music and comedy to the intimate venues that make it actually worth showing up for.</p>
+      <a href="#events" class="hero-cta">
+        Upcoming Shows
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-item">Live Music</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Stand-Up Comedy</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Local Venues</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Real Crowds</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Slime Events Ltd.</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Live Music</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Stand-Up Comedy</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Local Venues</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Real Crowds</span><span class="ticker-item ticker-dot">✦</span>
+      <span class="ticker-item">Slime Events Ltd.</span><span class="ticker-item ticker-dot">✦</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="about-number">01</div>
+    <div class="about-content">
+      <h2>Events that<br/><em>Actually</em> Hit</h2>
+      <p>We're not filling arenas. We're filling rooms — the right rooms, with the right people, and acts that leave a mark.</p>
+      <p>Slime Events specialises in promoting intimate concerts and comedy nights at local venues. We handle everything from the first booking call to the last pint sold.</p>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services" id="services">
+    <div class="services-inner">
+      <p class="section-label">What We Do</p>
+      <div class="services-grid">
+        <div class="service-card">
+          <span class="service-icon">🎸</span>
+          <h3>Live Music Nights</h3>
+          <p>Emerging artists, local legends, touring acts. We book and promote concerts that fit the room — not the other way around.</p>
+        </div>
+        <div class="service-card">
+          <span class="service-icon">🎤</span>
+          <h3>Comedy Shows</h3>
+          <p>From open mic nights to headliner gigs. We know what makes an audience laugh — and we know how to fill the seats first.</p>
+        </div>
+        <div class="service-card">
+          <span class="service-icon">📍</span>
+          <h3>Venue Partnerships</h3>
+          <p>We work with pubs, clubs, arts spaces and community venues to bring programming that's right for the room and right for the crowd.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPCOMING EVENTS -->
+  <section class="events" id="events">
+    <div class="events-header">
+      <h2>Upcoming<br/><span>Shows</span></h2>
+      <a href="#contact" class="view-all">Get on the list →</a>
+    </div>
+    <div class="events-list">
+      <a class="event-row" href="#contact">
+        <div class="event-date">14 Mar<br/>2026</div>
+        <div class="event-title">The Hollow Bones</div>
+        <div class="event-meta">
+          <span class="event-venue">The Anchor Pub, Leeds</span>
+          <span class="event-tag">Live Music</span>
+        </div>
+      </a>
+      <a class="event-row" href="#contact">
+        <div class="event-date">21 Mar<br/>2026</div>
+        <div class="event-title">Open Mic Night Vol. 4</div>
+        <div class="event-meta">
+          <span class="event-venue">The Brickhouse, Manchester</span>
+          <span class="event-tag">Comedy</span>
+        </div>
+      </a>
+      <a class="event-row" href="#contact">
+        <div class="event-date">4 Apr<br/>2026</div>
+        <div class="event-title">Danny Lowe: New Material</div>
+        <div class="event-meta">
+          <span class="event-venue">Cellar Stage, Sheffield</span>
+          <span class="event-tag">Comedy</span>
+        </div>
+      </a>
+      <a class="event-row" href="#contact">
+        <div class="event-date">11 Apr<br/>2026</div>
+        <div class="event-title">Folklore & Fire Session</div>
+        <div class="event-meta">
+          <span class="event-venue">The Parlour, Leeds</span>
+          <span class="event-tag">Live Music</span>
+        </div>
+      </a>
+      <a class="event-row" href="#contact">
+        <div class="event-date">25 Apr<br/>2026</div>
+        <div class="event-title">Northern Circuit Comedy</div>
+        <div class="event-meta">
+          <span class="event-venue">The Golden Fleece, York</span>
+          <span class="event-tag">Comedy</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- WHY US -->
+  <section class="why">
+    <div class="why-inner">
+      <h2>Why Small<br/>Rooms Win</h2>
+      <div class="why-grid">
+        <div class="why-item">
+          <div class="why-stat">100%</div>
+          <h3>Sweat in the Room</h3>
+          <p>The best gigs happen when you can feel everyone around you. We keep it that way on purpose.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-stat">0</div>
+          <h3>Bad Seats</h3>
+          <p>No nosebleeds. No screens. Just you, the act, and a good drink.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-stat">Local</div>
+          <h3>Always</h3>
+          <p>We work with venues, artists, and promoters who are from here — and proud of it.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-stat">Real</div>
+          <h3>Every Time</h3>
+          <p>No backing tracks, no auto-tune, no algorithms deciding what's worth your evening. Just honest live performance.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <p class="section-label">Get In Touch</p>
+    <h2>Let's Make<br/><span>Something</span></h2>
+    <p>Venue owner? Artist looking for a gig? Just want on our mailing list? Drop us a message below.</p>
+    <form class="contact-form" onsubmit="handleSubmit(event)" action="https://formspree.io/f/xjgawrde" method="POST">
+      <div class="form-row">
+        <input type="text" placeholder="Your Name" required />
+        <input type="email" placeholder="Email Address" required />
+      </div>
+      <select>
+        <option value="" disabled selected>I'm getting in touch as a…</option>
+        <option>Venue Owner</option>
+        <option>Artist / Comedian</option>
+        <option>Event Attendee</option>
+        <option>Other</option>
+      </select>
+      <textarea placeholder="Tell us what you're thinking…"></textarea>
+      <button type="submit" class="submit-btn">Send Message →</button>
+    </form>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">Slime Events Ltd.</div>
+    <p>© 2026 Slime Events Ltd. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#"><span class="__cf_email__" data-cfemail="fc9499909093bc8f90959199998a9992888fd29f93d28997">[email&#160;protected]</span></a>
+    </div>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    document.addEventListener('mousemove', e => {
+      cursor.style.left = e.clientX + 'px';
+      cursor.style.top = e.clientY + 'px';
+    });
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+    });
+
+    // Form submit handler
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('.submit-btn');
+      btn.textContent = 'Sending...';
+      btn.disabled = true;
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          btn.textContent = "Sent! We'll be in touch";
+          btn.style.background = '#0a0a0a';
+          btn.style.color = '#c8f000';
+          btn.style.border = '1px solid #c8f000';
+          form.reset();
+        } else {
+          btn.textContent = 'Something went wrong - try again';
+          btn.disabled = false;
+        }
+      } catch {
+        btn.textContent = 'Something went wrong - try again';
+        btn.disabled = false;
+      }
+    }
+
+    // Scroll reveal
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.service-card, .event-row, .why-item').forEach(el => {
+      
